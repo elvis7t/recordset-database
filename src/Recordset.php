@@ -1,6 +1,6 @@
 <?php
 
-namespace WilliamCosta\DatabaseManager;
+namespace ElvisLEite\DatabaseManager;
 require_once("conecta.php");
  
 class Recordset {

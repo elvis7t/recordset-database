@@ -1,5 +1,5 @@
 <?php
-namespace WilliamCosta\DatabaseManager;
+namespace ElvisLEite\DatabaseManager;
 
 date_default_timezone_set('America/Sao_paulo');
 //Abre Conexao com mysql
