@@ -1,5 +1,5 @@
 {
-    "name": "elvis7t/database-manager",
+    "name": "elvis7t/recordset-database",
     "description": "A simple library for managing database connections, results pagination and building queries in PHP.",
     "type": "library",
     "license": "GPL-3.0-or-later",
@@ -11,7 +11,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "elvisleite\\DatabaseManager\\": "src/"
+            "elvisleite\\RecordSetDatabase\\": "src/"
         }
     },
     "require": {
