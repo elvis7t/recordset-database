@@ -1,6 +1,6 @@
 <?php
-namespace ElvisLEite\DatabaseManager;
-use \ElvisLeite\DatabaseManager\Recordset;
+namespace ElvisLEite\RecordsetDatabase;
+use \ElvisLeite\RecordsetDatabase\Recordset;
 //sujeira embaixo do tapete :(
     error_reporting(E_ALL & E_NOTICE & E_WARNING);
     // require_once("../model/recordset.php");
