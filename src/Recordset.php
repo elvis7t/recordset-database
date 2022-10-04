@@ -1,6 +1,6 @@
 <?php
 
-namespace ElvisLEite\DatabaseManager;
+namespace ElvisLeite\DatabaseManager;
 require_once("conecta.php");
  
 class Recordset {

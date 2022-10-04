@@ -1,5 +1,5 @@
 <?php
-namespace ElvisLEite\DatabaseManager;
+namespace ElvisLeite\DatabaseManager;
 
 date_default_timezone_set('America/Sao_paulo');
 //Abre Conexao com mysql
