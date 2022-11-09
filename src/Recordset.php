@@ -1,197 +1,181 @@
 <?php
 
 namespace ElvisLeite\RecordsetDatabase;
-require_once("conecta.php");
+ use ElvisLeite\RecordsetDatabase\Connection;
  
-class Recordset {
-   /**
-   * Link de conexão com o banco de dados
-   * @var 
-   */
-    private $link;   
-    /**
-   * Recebe a quantidade de linhas
-   * @var 
-   */  
-    private $linhas;
-    /**
-   * Recebe função mysqli_query
-   * @var 
-   */
-    private $result;
-    /**
-   * Recebe comando em sql
-   * @var 
-   */
-    private $sql;
-    /**
-   * Recebe Registros
-   * @var 
-   */
-    private $regs;
+class Recordset
+{
+	/**
+	 * Result 	 
+	 * @var string
+	 */
+	private $result;
 
-   /**
-   * Método responsável por criar uma conexão com o banco de dados
-   */
-    function __construct(){   
-      $this->link = conecta();
-      return $this->link;
-    }
-     /**
-   * Método responsável por executar queries dentro do banco de dados
-   * @param  string $sql
-   * @param  link  $link   
-   */
-    function Executa_Sql($sql){
-      mysqli_query($this->link, $sql) or die(mysqli_error($this->link));
-    }
-     /**
-   * Método responsável por gerar dados do banco de dados
-   * @param  string $query
-   * @param  array  $params
-   * @return PDOStatement
-   */
-    function GeraDados(){
-      return $this->regs = mysqli_fetch_assoc($this->result);
-      desconecta($this->link);
-    }
-     /**
-   * Método responsável por inserir dados no banco
-   * @param  array $campos [ field => value ]
-   * @return integer dados inseridos
-   */
-    function Insere($campos, $tabela){
-      /*
-      uso: INSERT INTO $tabela($campos array) VALUES ($dados array)*/
-      $sql = "INSERT INTO ".$tabela."(";
-      //foreach nos campos da tabela, enviado via array
-      foreach($campos as $campo => $dado){
-        $sql.= $campo.", ";
-      }
-      $sql = substr($sql,0,-2);
-      $sql.=") VALUES(";
-      //foreach nos dados, enviados via array
-      foreach($campos as $campo => $dado){
-        if(is_string($dado)) // verifica se é string; otimiza o tipo de dados.
-          $sql.= "'".$dado."', ";
-        else
-          $sql.= $dado.", ";
-      }
-      $sql = substr($sql,0,-2);
-      
-      //finaliza sql e manda executar
-      $sql.= ")";
-      
-      $this->sql = $sql;
-      
-      return $this->Executa_Sql($this->sql);
-      desconecta($this->link);
-    }
-   /**
-   * Método responsável por executar atualizações no banco de dados
-   * @param  string $whr
-   * @param  array $campos [ field => value ]
-   * @return boolean
-   */
-    
-    function Altera($campos, $tabela, $whr){
-      /*uso: UPDATE $tabela SET $dados = alteração WHERE $whr*/
-      $sql = "UPDATE ".$tabela." SET ";
-      foreach($campos as $campo => $dado){
-        if(is_string($dado)) // verifica se é string; otimiza o tipo de dados.
-        $sql.= $campo.' = "'.$dado.'", ';
-        else
-        $sql.= $campo." = ".$dado.", ";
-      }
-      $sql = substr($sql,0,-2);
-      $sql.=" WHERE ".$whr;
-      $this->sql = $sql;
-      $this->Executa_Sql($this->sql);
-      desconecta($this->link);
-    }
-     /**
-   * Método responsável por excluir dados do banco
-   * @param  string $whr
-   * @param  string $tabela
-   * @return boolean
-   */
-    function Exclui($tabela, $whr){
-      /*uso: DELETE FROM $tabela WHERE $whr*/
-      $sql = "DELETE FROM ".$tabela;
-      $sql.=" WHERE ".$whr;
-      $this->sql = $sql;
-      
-      $this->Executa_Sql($this->sql);
-      desconecta($this->link);
-    }
-    
-    /**
-   * Método responsável por executar uma consulta no banco
-   * @param  array $campos
-   * @param  string $tabela
-   * @param  string $limit
-   * @param  string $group
-   * @param  string $where
-   * @param  string $order   
-   */
-    function Seleciona($campos="*", $tabela, $where=1, $group="", $order="", $limit="" ){
-      if($where <> 1){$whr = $where;}
-        
-      $sql = "SELECT ";
-      $sql.= $campos;	
-      $sql.=" FROM ".$tabela;
-      $sql.=" WHERE ". $whr;
-      
-      if($group)
-        $sql.= " GROUP BY ".$group;
-      if($order)
-        $sql.= " ORDER BY ".$order;
-      if($limit)
-        $sql.= " LIMIT ".$limit;
-      
-      $this->sql = $sql;
-      $this->result = mysqli_query($this->link, $this->sql) or die(mysqli_error($this->link));
-      $this->linhas = mysqli_num_rows($this->result);   
-    }
-    /**
-   * Método responsável por inserir dados no banco
-   * @param  string $sql   
-   */
-    Function FreeSQL($sql){
-      $this->sql = $sql;
-      $this->result = mysqli_query($this->link, $this->sql) or die(mysqli_error($this->link));
-      if(is_bool($this->result)){$this->linhas = 0;}
-      else {$this->linhas = mysqli_num_rows($this->result);}
-    }    
-   /**
-   * Método responsável por pegar um campo de uma tabela
-   * @param  array $campo   
-   * @param  string $tabela   
-   * @param  string $where   
-   */   
-    function pegar($campo="*", $tabela, $where){
-      $this->Seleciona($campo, $tabela, $where);
-      $this->GeraDados();
-      return $this->fld($campo);
-    }
-    /*------------------------------------------------------------------------------------------------*/
-     /**
-   * Método responsável por pegar um campo de uma tabela
-   * @param  array $campo   
-   *
-   */  
-    function fld($campo){
-      return $this->regs[$campo];
-    }
-     /**
-   * Método responsável por gerar um id sequencial
-   * @param  array $campo   
-   * @param  string $tabela      
-   */  
-    function autocod($campo, $tabela){
-      $this->FreeSql("SELECT ".$campo." FROM ".$tabela." ORDER BY ".$campo." DESC");
-      $this->GeraDados();
-      $cod = $this->fld($campo)+1;
-      return $cod;
-    }
-  }
+	/**	 
+	 *Registres
+	 * @var array
+	 */
+	private $regs;
+
+	/**
+	 * Link of the connection
+	 * @var string
+	 */
+	private $link;
+
+	/**
+	 * Method responsible for set Connection
+	 */
+	function __construct()
+	{
+		$this->link = Connection::setConnect();
+		return $this->link;
+	}
+
+	/**
+	 * Method responsible for runing the sql query
+	 * @param mysqli $sql
+	 * @return void	 
+	 */
+	public function Execute($sql): void
+	{
+		$this->result = mysqli_query($this->link, $sql) or die(mysqli_error($this->link));
+	}
+
+	/**
+	 * Method responsible for generating the datas	 
+	 * @return void	 
+	 */
+	public function DataGenerator()
+	{
+		return $this->regs = mysqli_fetch_array($this->result);
+		//CLOSE CONNECTION
+		$ob =  new Connection();
+		$ob->getDesconnect($this->link);
+	}
+
+	/**
+	 * Method responsible for selectioning the table's filds	 *
+	 * @param array $field
+	 * @return mixed
+	 */
+	public function fld($field): mixed
+	{
+		return $this->regs[$field];
+	}
+
+	/**
+	 * Method responsible for Insert data into the table
+	 * @param array $values
+	 * @param string $table
+	 * @return sql
+	 */
+	public function Insert($values, $table)
+	{
+		//QUERY DATA
+		$fields = array_keys($values);
+
+		//MOONT A QUERY
+		$sql = "INSERT INTO $table (" . implode(',', $fields) . ") VALUES ('" . implode("','", $values) . "')";
+
+		//RETURN RUN SQL
+		return self::Execute($sql);
+	}
+
+	/**	 
+	 *Method responsible for selectioning the datas
+	 * @param string $table
+	 * @param string $where
+	 * @param string $order
+	 * @param string $limit
+	 * @param string $fields
+	 * @return sql
+	 */
+	public function Select($table, $where = null, $order = null, $limit = null, $fields = '*')
+	{
+		//DATES OF THE QUERY
+		$where = strlen($where) ? 'WHERE ' . $where : '';
+		$order = strlen($order) ? 'ORDER BY ' . $order : '';
+		$limit = strlen($limit) ? 'LIMIT ' . $limit : '';
+
+		//SET UP A QUERY		
+		$sql = "SELECT $fields FROM $table $where $order $limit";
+
+		//RUN DE QUERY
+		$this->result = mysqli_query($this->link, $sql);
+
+		//RUN DE QUERY
+		return $this->result;
+	}
+
+	/**	 
+	 * Method responsible for updating the datas
+	 * @param array $filds
+	 * @param string $table
+	 * @param string $where
+	 * @return bol
+	 */
+	public function Update($filds, $table, $where)
+	{
+		//MOUNT QUERY
+		$sql = "UPDATE $table SET ";
+		foreach ($filds as $fild => $date) {
+			if (is_string($date))
+				$sql .= $fild . ' = "' . $date . '", ';
+			else
+				$sql .= $fild . " = " . $date . ", ";
+		}
+		$sql = substr($sql, 0, -2);
+		$sql .= " WHERE " . $where;
+
+		//RUN QUERY
+		$this->Execute($sql);
+
+		//RETURN SUCCESS
+		return true;
+	}
+
+	/**
+	 * Method responsible for deleting the data
+	 * @param mixed $table	
+	 * @param mixed $whr
+	 * @return void
+	 */
+	public function Delete($table, $whr): void
+	{
+		$sql = "DELETE FROM $table WHERE $whr";
+
+		// RUN SQL		
+		$this->Execute($sql);
+	}
+
+	/**
+	 * Method responsible for selectioning a fild of the table
+	 * @param string $table
+	 * @param string $where
+	 * @param string $field
+	 * @return string
+	 */
+	public function getFild($table, $where, $field)
+	{
+		self::Select($table, $where, '', '', $field);
+		self::DataGenerator();
+		return $this->fld($field);
+	}
+
+	/**
+	 * Method responsible for generated a auto-increment on the table
+	 * @param mixed $fild
+	 * @param mixed $table
+	 * @return int $cod
+	 */
+	public function setAutoCode($fild, $table)
+	{
+		$this->Execute("SELECT " . $fild . " FROM " . $table . " ORDER BY " . $fild . " DESC");
+		$this->DataGenerator();
+		$cod = $this->fld($fild) + 1;
+
+		//RETURN ID
+		return $cod;
+	}
+}
