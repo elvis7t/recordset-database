@@ -11,7 +11,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "elvisleite\\RecordSetDatabase\\": "src/"
+            "ElvisLeite\\RecordSetDatabase\\": "src/"
         }
     },
     "require": {

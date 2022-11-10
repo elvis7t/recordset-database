@@ -1,5 +1,5 @@
 <?php
-namespace ElvisLeite\RecordsetDatabase;
+namespace ElvisLeite\RecordSetDatabase;
 date_default_timezone_set('America/Sao_paulo');
 
 class Connection

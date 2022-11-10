@@ -1,7 +1,7 @@
 <?php
 
 namespace ElvisLeite\RecordsetDatabase;
- use ElvisLeite\RecordsetDatabase\Connection;
+ use ElvisLeite\RecordSetDatabase\Connection;
  
 class Recordset
 {
