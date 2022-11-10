@@ -12,7 +12,7 @@ To use this library just follow the examples below:
 
 require 'vendor/autoload.php';
 
-use WilliamCosta\DatabaseManager\Database;
+use RecordSetDatabase
 
 //DATABASE CREDENTIALS
 $dbHost = 'localhost';
