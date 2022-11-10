@@ -1,5 +1,5 @@
 {
-    "name": "elvis-leite",
+    "name": "elvis-leite/recordset-database",
     "description": "A simple library for managing database connections, results pagination and building queries in PHP.",
     "type": "library",
     "license": "GPL-3.0-or-later",
