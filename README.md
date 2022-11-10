@@ -1,6 +1,6 @@
-# PHP Database Manager
+# PHP Database Manager RecordSet
 
-This is a simple library for managing database connections, results pagination and building queries in PHP.
+This is a simple library for managing database connections and building queries in PHP.
 
 ## Usage
 
@@ -14,36 +14,59 @@ require 'vendor/autoload.php';
 
 use RecordSetDatabase
 
-//DATABASE CREDENTIALS
-$dbHost = 'localhost';
-$dbName = 'database';
-$dbUser = 'root';
-$dbPass = 'pass';
-$dbPort = 3306;
+//DATABASE CREDENTIALS IN CONNECTION CLASS
+DB_HOSTNAME = 'localhost';
+DB_USERNAME = 'database';
+DB_PASSWORD = 'root';
+DB_DATABASE = 'pass';
+DB_CHARSET = 'utf8'
 
-//CONFIG DATABASE CLASS
-Database::config($dbHost,$dbName,$dbUser,$dbPass,$dbPort);
 
 //TABLE INSTANCE
-$obDatabase = new Database('table_name');
+$rs = new Recordset();
 
 //SELECT (return a PDOStatement object)
-$results = $obDatabase->select('id > 10','name ASC','1','*');
+$results = $rs->select('table','id > 10','name ASC','1','*');
 
 //INSERT (return inserted id)
-$id = $obDatabase->insert([
-  'name' => 'William Costa'
+$id = $rs->insert([
+  'name' => 'Elvis'
 ]);
 
 //UPDATE (return a bool)
-$success = $obDatabase->update('id = 1',[
-  'name' => 'William Costa2'
+$success = $rs->update('table','id = 1',[
+  'name' => 'Elvis Leite'
 ]);
 
 //DELETE (return a bool)
-$success = $obDatabase->delete('id = 1');
+$success = $rs->delete('table''id = 1');
 
-```
+//EXECUTE QUERY
+$sql = "select *from tabble";
+$rs->Execute($sql);
+
+//DATA GENERATOR
+<?php
+$rs->Select('table');
+while($rs->DataGeneretor){
+}
+?>
+<tr><td><?=rs->fld('table_fild')?></td></tr>
+<?php
+}
+?>
+
+//DATA GENERATOR WHITH FORMAT DATE
+<?php
+$rs->Select('table');
+while($rs->DataGeneretor){
+}
+?>
+<tr><td><?=rs->formFld('table_fild')?></td></tr>
+<?php
+}
+?>
+return <tr><td>25/10/2022 às 13:01:21</td></tr>
 
 ## Requirements
 
