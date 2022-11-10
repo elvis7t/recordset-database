@@ -22,7 +22,7 @@ DB_DATABASE = 'pass';
 DB_CHARSET = 'utf8'
 
 
-//TABLE INSTANCE
+//RECORDSET INSTANCE
 $rs = new Recordset();
 
 //SELECT (return a PDOStatement object)
