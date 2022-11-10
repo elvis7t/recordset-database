@@ -57,7 +57,7 @@ class Recordset
 	}
 
 	/**
-	 * Method responsible for selectioning the table's filds	 *
+	 * Method responsible for selectioning the table's filds	
 	 * @param array $field
 	 * @return mixed
 	 */
