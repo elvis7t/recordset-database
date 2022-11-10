@@ -3,7 +3,7 @@
 namespace ElvisLeite\RecordSetDatabase;
 
 use ElvisLeite\RecordSetDatabase\Connection;
-use ElvisLeite\RecordSetDatabase\Formattter;
+use ElvisLeite\RecordSetDatabase\Formatter;
 
 class Recordset
 {
@@ -73,7 +73,7 @@ class Recordset
 	 */
 	public function formFld($field):string
 	{
-		return Formattter::setTimeDate(self::fld($field));
+		return Formatter::setTimeDate(self::fld($field));
 		
 	}
 	
@@ -84,7 +84,7 @@ class Recordset
 	 */
 	public function formMonthFld($field):string
 	{
-		return Formattter::setMonthformat(self::fld($field));		
+		return Formatter::setMonthformat(self::fld($field));		
 	}
 
 	/**
