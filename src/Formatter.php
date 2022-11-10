@@ -5,7 +5,7 @@ namespace ElvisLeite\RecordSetDatabase;
 //sujeira embaixo do tapete :(
 error_reporting(E_ALL & E_NOTICE & E_WARNING);
 // require_once("../model/recordset.php");
-class Formattter
+class Formatter
 {
     /**
      * Method responsible for count days
