@@ -42,7 +42,7 @@ $success = $rs->update('table','id = 1',[
 $success = $rs->delete('table''id = 1');
 
 //EXECUTE QUERY
-$sql = "select *from tabble";
+$sql = "select *from table";
 $rs->Execute($sql);
 
 //DATA GENERATOR
