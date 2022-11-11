@@ -61,7 +61,7 @@ class Recordset
 	 * @param string $sql
 	 * @return void	 
 	 */
-	public function getCountLines($sql): int
+	public function getCountRows($sql): int
 	{
 		$this->result = mysqli_query($this->link, $sql);
 		
