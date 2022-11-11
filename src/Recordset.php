@@ -57,6 +57,19 @@ class Recordset
 	}
 
 	/**
+	 * Method responsible for the number of rows in the table
+	 * @param string $sql
+	 * @return void	 
+	 */
+	public function getCountLines($sql): int
+	{
+		$this->result = mysqli_query($this->link, $sql);
+		
+		//RETURN NUMBER OF TABLE ROWS
+		return $this->numRows  = mysqli_num_rows($this->result);
+	}
+
+	/**
 	 * Method responsible for selectioning the table's filds	
 	 * @param array $field
 	 * @return mixed
