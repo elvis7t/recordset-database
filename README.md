@@ -25,7 +25,7 @@ DB_CHARSET = 'utf8'
 //RECORDSET INSTANCE
 $rs = new Recordset();
 
-//SELECT (return a PDOStatement object)
+//SELECT (return a SQL object)
 $results = $rs->select('table','id > 10','name ASC','1','*');
 
 //INSERT (return inserted id)
