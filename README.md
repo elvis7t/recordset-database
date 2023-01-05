@@ -39,7 +39,7 @@ $success = $rs->update('table','id = 1',[
 ]);
 
 //DELETE (return a bool)
-$success = $rs->delete('table''id = 1');
+$success = $rs->delete('table','id = 1');
 
 //EXECUTE QUERY
 $sql = "select *from table";
