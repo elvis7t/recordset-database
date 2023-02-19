@@ -70,4 +70,4 @@ return <tr><td>25/10/2022 às 13:01:21</td></tr>
 
 ## Requirements
 
-This library needs PHP 7.0 or greater.
+This library needs PHP 8.0 or greater.
