@@ -13,7 +13,7 @@ class Formatter
      * @param string $finalday
      * @return int
      */
-    public function setCountDays($startday, $finalday)
+    public function setCountDays(string $startday, string $finalday): int
     {
         $difference = strtotime($finalday) - strtotime($startday);
         $days = floor($difference / (60 * 60 * 24));
@@ -27,7 +27,7 @@ class Formatter
      * @param string $date
      * @return string
      */
-    public static function setDataBr($date)
+    public static function setDataBr(string $date): string
     {
         $arraydate = explode("-", $date);
         $formattedDate  = $arraydate[2] . "/" . $arraydate[1] . "/" . $arraydate[0];
@@ -41,7 +41,7 @@ class Formatter
      * @param string $date
      * @return string
      */
-    public static function setDataUsa($date)
+    public static function setDataUsa(string $date): string
     {
         $arraydate = explode("/", $date);
         $formattedDate = $arraydate[2] . "-" . $arraydate[1] . "-" . $arraydate[0];
@@ -56,7 +56,7 @@ class Formatter
      * @param string $timedate
      * @return string
      */
-    public static function setTimeDate($timedate)
+    public static function setTimeDate(string $timedate): string
     {
 
         $arraydate = explode(" ", $timedate);
@@ -72,7 +72,7 @@ class Formatter
      * @param string $date
      * @return string
      */
-    public static function setMonthformat($date)
+    public static function setMonthformat(string $date): string
     {
         $months = array("Janeiro", "Fevereiro", "Mar&ccedil;o", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro");
         list($day, $month, $year) = explode("/", $date);
@@ -85,9 +85,9 @@ class Formatter
      * Method responsible for treating the string modey
      *
      * @param string $value
-     * @return void
+     * @return string
      */
-    public function setMoneyFormat($value)
+    public function setMoneyFormat($value): string
     {
         return "R$" . number_format($value, 2, ",", ".");
     }
