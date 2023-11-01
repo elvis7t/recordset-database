@@ -71,9 +71,9 @@ class Recordset
 	 */
 	public function DataGenerator(): mixed
 	{
-		return $this->regs = mysqli_fetch_array($this->result);
-		//CLOSE CONNECTION			
 		Connection::setDesconnect();
+		//CLOSE CONNECTION			
+		return $this->regs = mysqli_fetch_array($this->result);
 	}
 
 	/**
