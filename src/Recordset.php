@@ -2,34 +2,36 @@
 
 namespace ElvisLeite\RecordSetDatabase;
 
-use ElvisLeite\RecordSetDatabase\Connection;
+use Exception;
 use ElvisLeite\RecordSetDatabase\Formatter;
+use ElvisLeite\RecordSetDatabase\Connection;
+use mysqli;
 
 class Recordset
 {
 	/**
 	 * Number rows	 
-	 * @var int
+	 * @var mixed
 	 */
-	private static $numRows;
+	private mixed $numRows;
 
 	/**
 	 * Result 	 
-	 * @var string
+	 * @var mysqli_result
 	 */
-	private static $result;
+	private $result;
 
 	/**	 
 	 *Registres
 	 * @var array
 	 */
-	private static $regs;
+	private $regs;
 
 	/**
 	 * Link of the connection
 	 * @var mysqli
 	 */
-	private static $link;
+	private mysqli $link;
 
 	/**
 	 * Method responsible for create connection to database
@@ -37,7 +39,7 @@ class Recordset
 	function __construct()
 	{
 		// Set connection and store it in self::$link
-		self::$link = Connection::setConnect();
+		$this->link = Connection::setConnect();
 	}
 
 	/**
@@ -45,14 +47,23 @@ class Recordset
 	 * @param string $sql
 	 * @return void	 
 	 */
-	public function Execute(string $sql): void
+	public function Execute(string $sql): bool
 	{
-		if (!mysqli_query(self::$link, $sql)) {
-			throw new Exception(mysqli_error(self::$link));
+		if (empty($sql)) {
+			throw new Exception('SQL query cannot be empty');
 		}
-		self::$result = mysqli_query(self::$link, $sql);
-	}
 
+		if (gettype(mysqli_query($this->link, $sql)) == "object") {
+			$this->result = mysqli_query($this->link, $sql);
+			return true;
+		}
+
+		if (!$this->result) {
+			throw new Exception(mysqli_error($this->link));
+		}
+
+		return false;
+	}
 
 	/**
 	 * Method responsible for generating the datas	 
@@ -60,7 +71,7 @@ class Recordset
 	 */
 	public function DataGenerator(): mixed
 	{
-		return self::$regs = mysqli_fetch_array(self::$result);
+		return $this->regs = mysqli_fetch_array($this->result);
 		//CLOSE CONNECTION			
 		Connection::setDesconnect();
 	}
@@ -72,20 +83,20 @@ class Recordset
 	 */
 	public function getCountRows(string $sql): int
 	{
-		self::$result = mysqli_query(self::$link, $sql);
+		$this->result = mysqli_query($this->link, $sql);
 
 		//RETURN NUMBER OF TABLE ROWS
-		return self::$numRows  = mysqli_num_rows(self::$result);
+		return $this->numRows  = mysqli_num_rows($this->result);
 	}
 
 	/**
 	 * Method responsible for selectioning the table's filds	
-	 * @param mixed $field
-	 * @return mixed
+	 * @param string $field
+	 * @return string
 	 */
-	public function fld(mixed $field): mixed
+	public function fld(mixed $field): string
 	{
-		return self::$regs[$field];
+		return $this->regs[$field];
 	}
 
 	/**
@@ -95,7 +106,7 @@ class Recordset
 	 */
 	public function formFld(string $field): string
 	{
-		return Formatter::setTimeDate(self::fld($field));
+		return Formatter::setTimeDate($this->fld($field));
 	}
 
 	/**
@@ -110,68 +121,82 @@ class Recordset
 
 	/**
 	 * Method responsible for Insert data into the table
-	 * @param mixed $values
+	 * @param array $values
 	 * @param string $table
 	 * @return void
 	 */
-	public function Insert(mixed $values, string $table): void
+	public function Insert(array $values, string $table): bool
 	{
-		// Validate table name
-		if (!$table) {
-			die('Invalid table specified');
+		if (empty($table) || empty($values)) {
+			throw new Exception('Invalid table or values');
 		}
-		// Sanitize input
-		foreach ($values as &$value) {
-			$value = htmlspecialchars(preg_replace('/[^A-Za-z0-9\-]/', '', $value), ENT_QUOTES);
+
+		$escapedValues = array_map(function ($value) {
+			return $value !== null ? $this->link->real_escape_string($value) : null;
+		}, $values);
+
+		$fields = implode(',', array_keys($escapedValues));
+		$escapedValues = implode("','", $escapedValues);
+
+		$sql = "INSERT INTO $table ($fields) VALUES ('$escapedValues')";
+
+		if ($this->Execute($sql)) {
+			return true;
 		}
-		$fields = array_keys($values);
-		$sql = "INSERT INTO $table (" . implode(',', $fields) . ") VALUES ('" . implode("','", $values) . "')";
-		self::Execute($sql);
+		return false;
 	}
 
-
-	/**	 
-	 *Method responsible for selectioning the datas
-	 * @param string $table
-	 * @param string $where
-	 * @param string $order
-	 * @param string $limit
-	 * @param string $fields
-	 * @return string
+	/**
+	 * Selects data from a database table based on the given parameters.
+	 * @param string $table The name of the table to select data from.
+	 * @param string $where (optional) The WHERE clause to filter the data.
+	 * @param string $order (optional) The ORDER BY clause to sort the data.
+	 * @param string $limit (optional) The LIMIT clause to limit the number of rows returned.
+	 * @param string $fields (optional) The fields to select from the table.
+	 * @throws Some_Exception_Class A description of the exception that may be thrown.
+	 * @return mixed The result of the select query.
 	 */
 	public function Select(string $table, string $where = null, string $order = null, string $limit = null, string $fields = '*')
 	{
-		$where = !is_null($where) ? 'WHERE ' . self::$link->real_escape_string($where) : '';
-		$order = !is_null($order) ? 'ORDER BY ' . self::$link->real_escape_string($order) : '';
-		$limit = (!is_null($limit) && (strlen($limit) < 256)) ? 'LIMIT ' . self::$link->real_escape_string($limit) : '';
-		$sql = "SELECT $fields FROM $table $where $order $limit";
+		$whereClause = !is_null($where) ? 'WHERE ' . $where : '';
+		$orderClause = !is_null($order) ? 'ORDER BY ' . $order : '';
+		$limitClause = !is_null($limit) ? 'LIMIT ' . $limit : '';
+		$sql = "SELECT $fields FROM $table $whereClause $orderClause $limitClause";
+		$result = $this->Execute($sql);
 
-		return self::$result = mysqli_query(self::$link, $sql);
+		return $result;
 	}
-
-
-	/**	 
-	 * Method responsible for updating the datas
-	 * @param mixed $filds
-	 * @param string $table
-	 * @param string $where
+	
+	/**
+	 * Updates the specified fields in the given table based on the provided condition.
+	 * @param array $fields The fields to be updated and their new values.
+	 * @param string $table The name of the table to update.
+	 * @param string $where The condition that determines which rows to update.
+	 * @throws Exception If the fields data is empty or not an array.
 	 * @return void
 	 */
-	public function Update(mixed $filds, string $table, string $where): void
+	public function Update(array $fields, string $table, string $where): void
 	{
-		if ($filds === null) {
-			return;
+		if (empty($fields) || !is_array($fields)) {
+			throw new Exception('Invalid or empty fields data');
 		}
+
 		$setFields = [];
-		foreach ($filds as $field => $value) {
-			if (is_string($value)) {
-				$setFields[] = $field . '="' . $value . '"';
-			} else {
-				$setFields[] = $field . '='  . $value;
-			}
+		foreach ($fields as $field => $value) {
+			$escapedField = $this->link->real_escape_string($field);
+			$escapedValue = is_string($value) ?
+				"'" . $this->link->real_escape_string($value) . "'" :
+				$this->link->real_escape_string($value);
+			$setFields[] = "$escapedField = $escapedValue";
 		}
-		$sql = "UPDATE $table SET " . implode(', ', $setFields) . ' WHERE ' . $where;
-		self::Execute($sql);
+
+		$escapedTable = $this->link->real_escape_string($table);
+		$escapedWhere = $this->link->real_escape_string($where);
+		$setFieldsString = implode(', ', $setFields);
+
+		$sql = "UPDATE $escapedTable SET $setFieldsString WHERE $escapedWhere";
+
+		$this->Execute($sql);
 	}
 
 
@@ -186,7 +211,7 @@ class Recordset
 		$sql = "DELETE FROM $table WHERE $whr";
 
 		// RUN SQL		
-		self::Execute($sql);
+		$this->Execute($sql);
 	}
 
 	/**
@@ -196,11 +221,13 @@ class Recordset
 	 * @param mixed $field
 	 * @return string
 	 */
-	public function getField(string $fieldname, string $tablename, string $whereClause): string
+	public function getField(string $fieldname, string $tablename, string $whereClause): ?string
 	{
-		self::Select($tablename, $whereClause);
-		self::DataGenerator();
-		return self::fld($fieldname);
+		$this->Select($tablename, $whereClause);
+		if (!is_null($this->DataGenerator())) {
+			return $this->fld($fieldname);
+		}
+		return null;
 	}
 
 
@@ -211,16 +238,17 @@ class Recordset
 	 * @return int $cod
 	 */
 
-	public function setAutoCode(mixed $fild, string $table): int
+	public function setAutoCode(string $fild, string $table): int
 	{
-		self::Execute("SELECT " . $fild . " FROM " . $table . " ORDER BY " . $fild . " DESC");
-		self::DataGenerator();
-		$data = self::fld($fild);
-		if (is_int($data)) {
-			$cod = $data + 1;
+		$this->Execute("SELECT $fild FROM  $table ORDER BY $fild DESC");
+		$this->DataGenerator();
+		$data = $this->fld($fild);
+		if ($data !== null) {
+			$cod = (int) $data + 1;
 		} else {
-			$cod = intval($data) + 1;
+			$cod = 1;
 		}
+
 		return $cod;
 	}
 }
