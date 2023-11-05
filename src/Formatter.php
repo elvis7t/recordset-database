@@ -2,9 +2,6 @@
 
 namespace ElvisLeite\RecordSetDatabase;
 
-//sujeira embaixo do tapete :(
-error_reporting(E_ALL & E_NOTICE & E_WARNING);
-// require_once("../model/recordset.php");
 class Formatter
 {
     /**
@@ -13,7 +10,7 @@ class Formatter
      * @param string $finalday
      * @return int
      */
-    public function setCountDays(string $startday, string $finalday): int
+    public static function setCountDays(string $startday, string $finalday): int
     {
         $difference = strtotime($finalday) - strtotime($startday);
         $days = floor($difference / (60 * 60 * 24));
@@ -58,12 +55,11 @@ class Formatter
      */
     public static function setTimeDate(string $timedate): string
     {
-
         $arraydate = explode(" ", $timedate);
         $fd = explode("-", $arraydate[0]);
-        $formattedDate = $fd[2] . "/" . $fd[1] . "/" . $fd[0] . " &agrave;s " . $arraydate[1];
+        $formattedDate = $fd[2] . "/" . $fd[1] . "/" . $fd[0] . " às " . $arraydate[1];
 
-        //RETURN DATE FORMATED
+        // Retorna a data formatada
         return $formattedDate;
     }
 
@@ -74,21 +70,54 @@ class Formatter
      */
     public static function setMonthformat(string $date): string
     {
-        $months = array("Janeiro", "Fevereiro", "Mar&ccedil;o", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro");
-        list($day, $month, $year) = explode("/", $date);
+        $months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-        //RETURN DATE FORMATED
+        // Parse a data e hora no formato "Y-m-d H:i:s" (Ano-Mês-Dia Hora:Minuto:Segundo)
+        $timestamp = strtotime($date);
+
+        if ($timestamp === false) {
+            return "Data e hora inválidas";
+        }
+
+        $day = date("d", $timestamp);
+        $month = date("n", $timestamp);
+        $year = date("Y", $timestamp);
+        $hour = date("H", $timestamp);
+        $minute = date("i", $timestamp);
+
         return $day . " de " . $months[$month - 1] . " de " . $year;
     }
-    
+
+
+
     /**
      * Method responsible for treating the string modey
      *
      * @param string $value
      * @return string
      */
-    public function setMoneyFormat($value): string
+    public static function setMoneyFormat($value): string
     {
         return "R$" . number_format($value, 2, ",", ".");
+    }
+
+    public static function setDateTimeFormat(string $dateTime): string
+    {
+        $months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+        // Parse a data e hora no formato "Y-m-d H:i:s" (Ano-Mês-Dia Hora:Minuto:Segundo)
+        $timestamp = strtotime($dateTime);
+
+        if ($timestamp === false) {
+            return "Data e hora inválidas";
+        }
+
+        $day = date("d", $timestamp);
+        $month = date("n", $timestamp);
+        $year = date("Y", $timestamp);
+        $hour = date("H", $timestamp);
+        $minute = date("i", $timestamp);
+
+        return $day . " de " . $months[$month - 1] . " de " . $year . " às " . $hour . ":" . $minute;
     }
 }

@@ -2,69 +2,56 @@
 
 namespace ElvisLeite\RecordSetDatabase;
 
+use Exception;
+use mysqli;
+
 date_default_timezone_set('America/Sao_paulo');
 
 class Connection
 {
-    /**
-     * Hostname of the connection
-     * @const 
-     */
-    const DB_HOSTNAME = 'localhost';
+    private string $host;
+    private string $username;
+    private string $password;
+    private string $database;
+    private string $charset;
+    private $link;
 
-    /**
-     * User of the connection
-     * @const 
-     */
-    const DB_USERNAME = 'root';
-
-    /**
-     * Password of the connection
-     * @const 
-     */
-    const DB_PASSWORD = '';
-
-    /**
-     * Database of the connection
-     * @const 
-     */
-    const DB_DATABASE = 'test';
-
-    /**
-     * Charset of the connection
-     * @const 
-     */
-    const DB_CHARSET = 'utf8';
-
-    /**
-     * Link of the connection
-     * @var mysqli
-     */
-    private static $link;
-
-    /**
-     * Method responsible for connecting to the database
-     * @return mysqli 
-     */
-    public static function setConnect()
+    public function __construct($host, $username, $password, $database, $charset = 'utf8')
     {
-        try {
-            self::$link = mysqli_connect(self::DB_HOSTNAME, self::DB_USERNAME, self::DB_PASSWORD, self::DB_DATABASE);
-            mysqli_set_charset(self::$link, self::DB_CHARSET);
-        } catch (\Exception $e) {
-            echo $e->getMessage();
-        }
-        return self::$link;
+        $this->host = $host;
+        $this->username = $username;
+        $this->password = $password;
+        $this->database = $database;
+        $this->charset = $charset;
     }
 
-
-    /**
-     * *Method responsible for Disconnecting to the database
-     * @param string $link
-     * @return bool
-     */
-    public static function setDesconnect(): bool
+    public function openConnection()
     {
-        return mysqli_close(self::$link);
+        if ($this->link === null) {
+            try {
+                $this->link = new mysqli($this->host, $this->username, $this->password, $this->database);
+                if ($this->link->connect_error) {
+                    throw new Exception($this->link->connect_error, $this->link->connect_errno);
+                }
+                mysqli_set_charset($this->link, $this->charset);
+            } catch (Exception $e) {              
+                echo "Erro na conexão com o banco de dados: " . $e->getMessage();              
+            }
+        }        
+    }
+
+    public function closeConnection()
+    {
+        if ($this->link !== null) {
+            mysqli_close($this->link);
+            $this->link = null;
+        }
+    }
+
+    public function getConnection()
+    {
+        $this->openConnection();
+        return $this->link;
     }
 }
+

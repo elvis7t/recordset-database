@@ -3,128 +3,82 @@
 namespace ElvisLeite\RecordSetDatabase;
 
 use Exception;
+use InvalidArgumentException;
 use ElvisLeite\RecordSetDatabase\Formatter;
 use ElvisLeite\RecordSetDatabase\Connection;
-use mysqli;
 
-class Recordset
+class RecordSet
 {
-	/**
-	 * Number rows	 
-	 * @var mixed
-	 */
+	const DB_HOSTNAME = 'localhost';
+	const DB_USERNAME = 'root';
+	const DB_PASSWORD = '';
+	const DB_DATABASE = 'mvc';
+	const DB_CHARSET = 'utf8';
+
 	private mixed $numRows;
+	private mixed $result;
+	private mixed $regs;
+	private Connection $link;
 
-	/**
-	 * Result 	 
-	 * @var mysqli_result
-	 */
-	private $result;
-
-	/**	 
-	 *Registres
-	 * @var array
-	 */
-	private $regs;
-
-	/**
-	 * Link of the connection
-	 * @var mysqli
-	 */
-	private mysqli $link;
-
-	/**
-	 * Method responsible for create connection to database
-	 */
-	function __construct()
+	public function __construct()
 	{
-		// Set connection and store it in self::$link
-		$this->link = Connection::setConnect();
+		$this->link = new Connection(self::DB_HOSTNAME, self::DB_USERNAME, self::DB_PASSWORD, self::DB_DATABASE, self::DB_CHARSET);
+		$this->link->openConnection();
 	}
 
-	/**
-	 * Method responsible for runing the sql query
-	 * @param string $sql
-	 * @return void	 
-	 */
-	public function Execute(string $sql): bool
+	public function Execute(string $sql)
 	{
 		if (empty($sql)) {
 			throw new Exception('SQL query cannot be empty');
 		}
-
-		if (gettype(mysqli_query($this->link, $sql)) == "object") {
-			$this->result = mysqli_query($this->link, $sql);
-			return true;
+		try {
+			$result = mysqli_query($this->link->getConnection(), $sql);
+		} catch (\Exception $e) {
+			throw new Exception('Database error: ' . $e->getMessage());
 		}
 
-		if (!$this->result) {
-			throw new Exception(mysqli_error($this->link));
+		if (gettype($result) == "object") {
+			$this->result = $result;
 		}
 
-		return false;
+		if (!$result) {
+			throw new Exception('Query execution failed: ' . mysqli_error($this->link->getConnection()));
+		}
+		$this->link->closeConnection();
 	}
 
-	/**
-	 * Method responsible for generating the datas	 
-	 * @return mixed 
-	 */
 	public function DataGenerator(): mixed
 	{
-		Connection::setDesconnect();
-		//CLOSE CONNECTION			
 		return $this->regs = mysqli_fetch_array($this->result);
 	}
 
-	/**
-	 * Method responsible for the number of rows in the table
-	 * @param string $sql
-	 * @return int	 
-	 */
 	public function getCountRows(string $sql): int
 	{
-		$this->result = mysqli_query($this->link, $sql);
+		$this->result = mysqli_query($this->link->getConnection(), $sql);
 
-		//RETURN NUMBER OF TABLE ROWS
-		return $this->numRows  = mysqli_num_rows($this->result);
+		return $this->numRows = mysqli_num_rows($this->result);
 	}
 
-	/**
-	 * Method responsible for selectioning the table's filds	
-	 * @param string $field
-	 * @return string
-	 */
-	public function fld(mixed $field): string
+	public function fld(mixed $field): ?string
 	{
-		return $this->regs[$field];
+		return $this->regs[$field] ?? null;
 	}
 
-	/**
-	 * Method responsible for handling the date field in the format date: time Brazil
-	 * @param string $field
-	 * @return string
-	 */
-	public function formFld(string $field): string
+	public function formatFld(string $field): string
 	{
 		return Formatter::setTimeDate($this->fld($field));
 	}
 
-	/**
-	 * Method responsible for handling the date field in the format date: time Brazil
-	 * @param string $field
-	 * @return string
-	 */
-	public static function formMonthFld($field): string
+	public function formatMonthWhithHourField($field): string
 	{
-		return Formatter::setMonthformat($field);
+		return Formatter::setDateTimeFormat($this->fld($field));
 	}
 
-	/**
-	 * Method responsible for Insert data into the table
-	 * @param array $values
-	 * @param string $table
-	 * @return void
-	 */
+	public function formatMonthField($field): string
+	{
+		return Formatter::setMonthformat($this->fld($field));
+	}
+
 	public function Insert(array $values, string $table): bool
 	{
 		if (empty($table) || empty($values)) {
@@ -132,7 +86,7 @@ class Recordset
 		}
 
 		$escapedValues = array_map(function ($value) {
-			return $value !== null ? $this->link->real_escape_string($value) : null;
+			return $value !== null ? $this->link->getConnection()->real_escape_string($value) : null;
 		}, $values);
 
 		$fields = implode(',', array_keys($escapedValues));
@@ -140,109 +94,150 @@ class Recordset
 
 		$sql = "INSERT INTO $table ($fields) VALUES ('$escapedValues')";
 
-		if ($this->Execute($sql)) {
-			return true;
+		try {
+			$stmt = $this->link->getConnection()->prepare($sql);
+			if ($stmt === false) {
+				throw new Exception('Failed to prepare the statement');
+			}
+
+			if ($stmt->execute()) {
+				return true;
+			} else {
+				throw new Exception('Failed to execute the statement');
+			}
+		} catch (Exception $e) {
+			// Handle exceptions here, e.g., log or re-throw
+			throw new Exception('Insert operation failed: ' . $e->getMessage());
 		}
-		return false;
 	}
 
-	/**
-	 * Selects data from a database table based on the given parameters.
-	 * @param string $table The name of the table to select data from.
-	 * @param string $where (optional) The WHERE clause to filter the data.
-	 * @param string $order (optional) The ORDER BY clause to sort the data.
-	 * @param string $limit (optional) The LIMIT clause to limit the number of rows returned.
-	 * @param string $fields (optional) The fields to select from the table.
-	 * @throws Some_Exception_Class A description of the exception that may be thrown.
-	 * @return mixed The result of the select query.
-	 */
 	public function Select(string $table, string $where = null, string $order = null, string $limit = null, string $fields = '*')
 	{
 		$whereClause = !is_null($where) ? 'WHERE ' . $where : '';
 		$orderClause = !is_null($order) ? 'ORDER BY ' . $order : '';
 		$limitClause = !is_null($limit) ? 'LIMIT ' . $limit : '';
+
 		$sql = "SELECT $fields FROM $table $whereClause $orderClause $limitClause";
 		$result = $this->Execute($sql);
 
 		return $result;
 	}
-	
-	/**
-	 * Updates the specified fields in the given table based on the provided condition.
-	 * @param array $fields The fields to be updated and their new values.
-	 * @param string $table The name of the table to update.
-	 * @param string $where The condition that determines which rows to update.
-	 * @throws Exception If the fields data is empty or not an array.
-	 * @return void
-	 */
-	public function Update(array $fields, string $table, string $where): void
+
+	public function Update(array $fields, string $table, string $where): mixed
 	{
 		if (empty($fields) || !is_array($fields)) {
-			throw new Exception('Invalid or empty fields data');
+			throw new InvalidArgumentException('Invalid or empty fields data');
 		}
 
 		$setFields = [];
 		foreach ($fields as $field => $value) {
-			$escapedField = $this->link->real_escape_string($field);
+			$escapedField = $this->link->getConnection()->real_escape_string($field);
 			$escapedValue = is_string($value) ?
-				"'" . $this->link->real_escape_string($value) . "'" :
-				$this->link->real_escape_string($value);
+				"'" . $this->link->getConnection()->real_escape_string($value) . "'" :
+				$this->link->getConnection()->real_escape_string($value);
 			$setFields[] = "$escapedField = $escapedValue";
 		}
 
-		$escapedTable = $this->link->real_escape_string($table);
-		$escapedWhere = $this->link->real_escape_string($where);
+		$escapedTable = $this->link->getConnection()->real_escape_string($table);
+		$escapedWhere = $this->link->getConnection()->real_escape_string($where);
 		$setFieldsString = implode(', ', $setFields);
 
 		$sql = "UPDATE $escapedTable SET $setFieldsString WHERE $escapedWhere";
+		$this->checkQuery($sql);
 
-		$this->Execute($sql);
+		try {
+			if ($this->checkQuery($sql)) {
+				$stmt = $this->link->getConnection()->prepare($sql);
+			}
+			if ($stmt === false) {
+				throw new Exception('Failed to prepare the statement');
+			}
+
+			if ($stmt->execute()) {
+				return true;
+			} else {
+				throw new Exception('Failed to execute the statement');
+			}
+		} catch (Exception $e) {
+			// Handle exceptions here, e.g., log or re-throw
+			throw new Exception('Update operation failed: ' . $e->getMessage());
+		}
 	}
 
-
-	/**
-	 * Method responsible for deleting the data
-	 * @param string $table	
-	 * @param string $whr
-	 * @return void
-	 */
-	public function Delete(string $table, string $whr): void
+	public function Delete(string $table, string $conditions): mixed
 	{
-		$sql = "DELETE FROM $table WHERE $whr";
+		if (empty($table)) {
+			throw new InvalidArgumentException('Table name cannot be empty.');
+		}
 
-		// RUN SQL		
-		$this->Execute($sql);
+		if (empty($conditions)) {
+			throw new InvalidArgumentException('Conditions array cannot be empty.');
+		}
+
+		$ensureRecordExists = "SELECT * FROM $table WHERE $conditions";
+		$this->checkQuery($ensureRecordExists);
+		$result = $this->getCountRows($ensureRecordExists);
+
+		if ($result === 0) {
+			throw new InvalidArgumentException('Record does not exist.');
+		}
+
+		$sql = "DELETE FROM $table WHERE $conditions";
+
+		try {
+
+			$stmt = $this->link->getConnection()->prepare($sql);
+			if ($stmt === false) {
+				throw new Exception('Failed to prepare the statement');
+			}
+
+			if ($stmt->execute()) {
+				return true;
+			} else {
+				throw new Exception('Failed to execute the statement');
+			}
+		} catch (Exception $e) {
+			// Handle exceptions here, e.g., log or re-throw
+			throw new Exception('Delete operation failed: ' . $e->getMessage());
+		}
 	}
 
-	/**
-	 * Method responsible for selectioning a fild of the table
-	 * @param string $table
-	 * @param string $where
-	 * @param mixed $field
-	 * @return string
-	 */
 	public function getField(string $fieldname, string $tablename, string $whereClause): ?string
 	{
-		$this->Select($tablename, $whereClause);
-		if (!is_null($this->DataGenerator())) {
-			return $this->fld($fieldname);
+		if (empty($fieldname)) {
+			throw new InvalidArgumentException('fieldname name cannot be empty.');
 		}
-		return null;
+		if (empty($tablename)) {
+			throw new InvalidArgumentException('tablename name cannot be empty.');
+		}
+		if (empty($whereClause)) {
+			throw new InvalidArgumentException('whereClause name cannot be empty.');
+		}
+		$ensureRecordExists = "SELECT $fieldname FROM $tablename WHERE $whereClause";
+		$this->checkQuery($ensureRecordExists);
+		$result = $this->getCountRows($ensureRecordExists);
+
+		if ($result === 0) {
+			throw new InvalidArgumentException('Record does not exist.');
+		}
+		try {
+			
+			$this->Execute($ensureRecordExists);
+			$this->Select($tablename, $whereClause);
+			if (!is_null($this->DataGenerator())) {
+				return $this->fld($fieldname);
+			}
+			return null;
+		} catch (\Exception $e) {
+			throw new Exception('Database error: ' . $e->getMessage());
+		}
 	}
 
-
-	/**
-	 * Method responsible for generated a auto-increment on the table
-	 * @param mixed $fild
-	 * @param string $table
-	 * @return int $cod
-	 */
-
-	public function setAutoCode(string $fild, string $table): int
+	public function setAutoCode(string $field, string $table): int
 	{
-		$this->Execute("SELECT $fild FROM  $table ORDER BY $fild DESC");
+		$this->Execute("SELECT $field FROM  $table ORDER BY $field DESC");
 		$this->DataGenerator();
-		$data = $this->fld($fild);
+		$data = $this->fld($field);
 		if ($data !== null) {
 			$cod = (int) $data + 1;
 		} else {
@@ -250,5 +245,17 @@ class Recordset
 		}
 
 		return $cod;
+	}
+
+	private function checkQuery(string $sql): bool
+	{
+		$this->result = mysqli_query($this->link->getConnection(), $sql);
+
+		if (!$this->result) {
+			// Trate o erro de consulta, por exemplo, lançando uma exceção
+			throw new InvalidArgumentException('Erro na consulta SQL: ' . mysqli_error($this->link->getConnection()));
+		}
+
+		return true; // Ou retorne false, dependendo da lógica desejada.
 	}
 }
