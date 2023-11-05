@@ -21,52 +21,52 @@ DB_PASSWORD = 'root';
 DB_DATABASE = 'pass';
 DB_CHARSET = 'utf8'
 
+//Generating data with the Select method
+$rs = new RecosdSet();
+$rs->select('table_name','where_clause','order_clause','limit_clause');
+while($rs->DataGenerator(){
+?>
+<tr><td><?=$rs->fld('table_fild')?></td></tr>
+<?php
+}
+?>
 
-//RECORDSET INSTANCE
-$rs = new Recordset();
-
-//SELECT (return a SQL object)
-$results = $rs->select('table','id > 10','name ASC','1','*');
-
-//INSERT (return inserted id)
-$id = $rs->insert([
-  'name' => 'Elvis'
-]);
-
-//UPDATE (return a bool)
-$success = $rs->update('table','id = 1',[
-  'name' => 'Elvis Leite'
-]);
-
-//DELETE (return a bool)
-$success = $rs->delete('table','id = 1');
-
-//EXECUTE QUERY
-$sql = "select *from table";
+//Generating data with the Quary
+$rs = new RecosdSet();
+$sql = "select * from table_name";
 $rs->Execute($sql);
-
-//DATA GENERATOR
-<?php
-$rs->Select('table');
-while($rs->DataGeneretor){
-}
+while($rs->DataGenerator()){
 ?>
-<tr><td><?=rs->fld('table_fild')?></td></tr>
+<tr><td><?=$rs->fld('table_fild')?></td></tr>
 <?php
 }
-?>
 
 //DATA GENERATOR WHITH FORMAT DATE
 <?php
-$rs->Select('table');
-while($rs->DataGeneretor){
-}
+$rs = new RecosdSet();
+$rs->Select('table_name');
+while($rs->DataGenerator()){
 ?>
-<tr><td><?=rs->formFld('table_fild')?></td></tr>
+<tr><td><?=$rs->formFld('table_fild')?></td></tr>
 <?php
 }
 ?>
 return <tr><td>25/10/2022 às 13:01:21</td></tr>
+
+//INSERT 
+$rs = new RecosdSet();
+$id = $rs->insert([
+  'name' => 'Elvis'
+], 'user');
+
+//UPDATE (return a bool)
+$rs = new RecosdSet();
+$rs->update(['name' => 'Elvis Leite'], 'table_name','id = 1');
+
+//DELETE (return a bool)
+$rs->Delete('user','id = 4');
+
+
 
 ## Requirements
 
