@@ -32,6 +32,8 @@ class RecordSet
 			throw new Exception('SQL query cannot be empty');
 		}
 		try {
+			$this->checkQuery($sql);
+			$this->validateQuery($sql);
 			$result = mysqli_query($this->link->getConnection(), $sql);
 		} catch (\Exception $e) {
 			throw new Exception('Database error: ' . $e->getMessage());
@@ -53,10 +55,11 @@ class RecordSet
 	}
 
 	public function getCountRows(string $sql): int
-	{
+	{	
+		$this->checkQuery($sql);
 		$this->result = mysqli_query($this->link->getConnection(), $sql);
-
-		return $this->numRows = mysqli_num_rows($this->result);
+		$this->numRows = mysqli_num_rows($this->result);
+		return $this->numRows;
 	}
 
 	public function fld(mixed $field): ?string
@@ -93,7 +96,7 @@ class RecordSet
 		$escapedValues = implode("','", $escapedValues);
 
 		$sql = "INSERT INTO $table ($fields) VALUES ('$escapedValues')";
-
+		
 		try {
 			$stmt = $this->link->getConnection()->prepare($sql);
 			if ($stmt === false) {
@@ -118,6 +121,8 @@ class RecordSet
 		$limitClause = !is_null($limit) ? 'LIMIT ' . $limit : '';
 
 		$sql = "SELECT $fields FROM $table $whereClause $orderClause $limitClause";
+		$this->checkQuery($sql);
+		$this->validateQuery($sql);
 		$result = $this->Execute($sql);
 
 		return $result;
@@ -141,14 +146,14 @@ class RecordSet
 		$escapedTable = $this->link->getConnection()->real_escape_string($table);
 		$escapedWhere = $this->link->getConnection()->real_escape_string($where);
 		$setFieldsString = implode(', ', $setFields);
+		$this->validateCountQuery($table, $escapedWhere);
 
 		$sql = "UPDATE $escapedTable SET $setFieldsString WHERE $escapedWhere";
-		$this->checkQuery($sql);
-
+		$this->checkQuery($sql);		
+		
 		try {
-			if ($this->checkQuery($sql)) {
-				$stmt = $this->link->getConnection()->prepare($sql);
-			}
+			$stmt = $this->link->getConnection()->prepare($sql);
+
 			if ($stmt === false) {
 				throw new Exception('Failed to prepare the statement');
 			}
@@ -176,11 +181,7 @@ class RecordSet
 
 		$ensureRecordExists = "SELECT * FROM $table WHERE $conditions";
 		$this->checkQuery($ensureRecordExists);
-		$result = $this->getCountRows($ensureRecordExists);
-
-		if ($result === 0) {
-			throw new InvalidArgumentException('Record does not exist.');
-		}
+		$this->validateQuery($ensureRecordExists);
 
 		$sql = "DELETE FROM $table WHERE $conditions";
 
@@ -215,13 +216,10 @@ class RecordSet
 		}
 		$ensureRecordExists = "SELECT $fieldname FROM $tablename WHERE $whereClause";
 		$this->checkQuery($ensureRecordExists);
-		$result = $this->getCountRows($ensureRecordExists);
-
-		if ($result === 0) {
-			throw new InvalidArgumentException('Record does not exist.');
-		}
+		$this->validateQuery($ensureRecordExists);
+		
 		try {
-			
+
 			$this->Execute($ensureRecordExists);
 			$this->Select($tablename, $whereClause);
 			if (!is_null($this->DataGenerator())) {
@@ -235,7 +233,8 @@ class RecordSet
 
 	public function setAutoCode(string $field, string $table): int
 	{
-		$this->Execute("SELECT $field FROM  $table ORDER BY $field DESC");
+		$sql  = "SELECT $field FROM  $table ORDER BY $field DESC";		
+		$this->Execute($sql);
 		$this->DataGenerator();
 		$data = $this->fld($field);
 		if ($data !== null) {
@@ -252,10 +251,33 @@ class RecordSet
 		$this->result = mysqli_query($this->link->getConnection(), $sql);
 
 		if (!$this->result) {
-			// Trate o erro de consulta, por exemplo, lançando uma exceção
 			throw new InvalidArgumentException('Erro na consulta SQL: ' . mysqli_error($this->link->getConnection()));
 		}
 
-		return true; // Ou retorne false, dependendo da lógica desejada.
+		return true;
 	}
+
+	private function validateQuery(string $sql): bool
+	{
+
+		$result = $this->getCountRows($sql);
+
+		if ($result === 0) {
+			throw new InvalidArgumentException('Record does not exist.');
+		}
+		return true;
+	}
+	private function validateCountQuery(string $table, string $where): bool
+	{
+		$sqls = "SELECT COUNT(*) FROM $table WHERE $where";		
+		$this->Execute($sqls);		
+		$result = $this->DataGenerator();
+		$data = (int) $result['COUNT(*)'];
+		if ($data === 0) {
+			throw new Exception('Record does not exist.');
+		}
+		return true;
+	}
+	
+	
 }

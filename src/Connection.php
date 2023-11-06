@@ -25,7 +25,7 @@ class Connection
         $this->charset = $charset;
     }
 
-    public function openConnection()
+    public function openConnection(): void
     {
         if ($this->link === null) {
             try {
@@ -34,24 +34,32 @@ class Connection
                     throw new Exception($this->link->connect_error, $this->link->connect_errno);
                 }
                 mysqli_set_charset($this->link, $this->charset);
-            } catch (Exception $e) {              
-                echo "Erro na conexão com o banco de dados: " . $e->getMessage();              
+            } catch (Exception $e) {
+                echo "Erro na conexão com o banco de dados: " . $e->getMessage();
             }
-        }        
-    }
-
-    public function closeConnection()
-    {
-        if ($this->link !== null) {
-            mysqli_close($this->link);
-            $this->link = null;
         }
     }
 
-    public function getConnection()
+    public function closeConnection(): void
     {
-        $this->openConnection();
-        return $this->link;
+        if ($this->link !== null) {
+            try {
+                mysqli_close($this->link);
+                $this->link = null;
+            } catch (Exception $e) {
+                echo "Erro ao fechar a conexão: " . $e->getMessage();
+            }
+        }
     }
-}
 
+    public function getConnection(): mixed
+    {
+        try {
+            $this->openConnection();
+            return $this->link;
+        } catch (Exception $e) {
+            echo "Erro ao obter a conexão: " . $e->getMessage();
+            return null;
+        }
+    }    
+}
