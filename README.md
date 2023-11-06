@@ -27,7 +27,7 @@ $DB_CHARSET = 'utf8';
 $rs = new RecordSetDatabase();
 
 // Generating data with the Select method
-$rs->select('table_name', 'where_clause', 'order_clause', 'limit_clause');
+$rs->Select('table_name', 'where_clause', 'order_clause', 'limit_clause');
 
 while ($rs->DataGenerator()) {
     echo '<tr><td>' . $rs->fld('table_field') . '</td></tr>';
@@ -54,21 +54,31 @@ while ($rs->DataGenerator()) {
 
 // INSERT data
 $rs = new RecordSetDatabase();
-$id = $rs->insert([
-    'name' => 'Elvis'
-], 'user');
+$data = [
+        'id' => (string) $rs->setAutoCode('id', 'user'),
+        'name' => 'Tatys',
+        'mail' => 'tatiss@gmail.com',
+        'pass' => 's$2y$10$zKdjHmKbmJ6GVOIrApOiTO5sOpZSZkbHiscY9Kab/CnsKF.2dVt3S'
+    ];
+$rs->Insert($data, 'user');
 
-// UPDATE (returns a bool)
+// UPDATE 
 $rs = new RecordSetDatabase();
-$result = $rs->update(['name' => 'Elvis Leite'], 'table_name', 'id = 1');
+$result = $rs->Update(['name' => 'Elvis Leite'], 'table_name', 'id = 1');
 
-// DELETE (returns a bool)
+// DELETE 
 $result = $rs->Delete('user', 'id = 4');
 
-?>
+// Get Field
+$rs = new RecordSet();
+echo $rs->getField('id', 'user', 'id = 1');
 
-Improved PHP Code for Database Operations
-This code sample demonstrates how to use the RecordSetDatabase library to perform various database operations. Here's an overview of what each part of the code does:
+?>
+# Description
+<p align="justify">
+This library is designed to facilitate the interaction between PHP and databases using Mysqli. It provides methods for database connection, query execution, record selection, insert. 
+
+Improved PHP Code for Database Operations This code sample demonstrates how to use the RecordSetDatabase library to perform various database operations. Here's an overview of what each part of the code does:
 Include the Library: You need to include the library's autoload file to access its functionality.
 Import the RecordSetDatabase Class: Use the use statement to import the RecordSetDatabase class for easier access.
 Database Credentials: Set up your database credentials (host, username, password, database name, and charset) in the provided variables.
@@ -81,3 +91,4 @@ UPDATE Data: Update records in the database and get a boolean result indicating 
 DELETE Data: Delete records from the database and get a boolean result indicating success or failure.
 Requirements
 This library requires PHP 8.0 or greater to function correctly. Make sure you meet this requirement before using the code.
+<p/>
