@@ -13,9 +13,10 @@ Select Method: Use the select method to fetch data from a table based on conditi
 Query Method: Execute custom SQL queries with the Execute method and retrieve results in a similar way.
 Data Generator with DATE Formatting: Format date values with the formFld method and display the results.
 
-INSERT Data: Insert a new record into the database and receive the inserted record's ID.
-UPDATE Data: Update records in the database and get a boolean result indicating success or failure.
-DELETE Data: Delete records from the database and get a boolean result indicating success or failure.
+*INSERT Data: Insert a new record into the database and receive the inserted record's ID.
+*UPDATE Data: Update records in the database and get a boolean result indicating success or failure.
+*DELETE Data: Delete records from the database and get a boolean result indicating success or failure.
+
 Requirements
 This library requires PHP 8.0 or greater to function correctly. Make sure you meet this requirement before using the code.
 <p/>
