@@ -7,7 +7,6 @@ This is a simple library for managing database connections and building queries 
 To use this library just follow the examples below:
 
 #### Database
-```php
 <?php
 
 // Include the library's autoload file
