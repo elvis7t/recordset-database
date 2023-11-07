@@ -1,6 +1,8 @@
 # PHP Database Manager RecordSet
 
 This is a simple library for managing database connections and building queries in PHP.
+
+<a href="https://packagist.org/packages/elvis-leite/recordset-database"> Composer link<a/>
 # Description
 <p align="justify">
 This library is designed to facilitate the interaction between PHP and databases using Mysqli. It provides methods for database connection, query execution, record selection, insert. 
@@ -24,6 +26,7 @@ This library requires PHP 8.0 or greater to function correctly. Make sure you me
 <p/>
 
 ## Usage
+composer require elvis-leite/recordset-database
 
 To use this library just follow the examples below:
 
