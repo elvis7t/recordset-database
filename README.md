@@ -101,7 +101,8 @@ $rs = new RecordSetDatabase();
 $result = $rs->Update(['name' => 'Elvis Leite'], 'table_name', 'id = 1');
 
 // DELETE 
-$result = $rs->Delete('user', 'id = 4');
+$rs = new RecordSetDatabase();
+$rs->Delete('user', 'id = 4');
 
 // Get Field
 $rs = new RecordSet();
