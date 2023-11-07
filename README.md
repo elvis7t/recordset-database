@@ -29,7 +29,7 @@ Improved PHP Code for Database Operations This code sample demonstrates how to u
 * DELETE Data: Delete records from the database and get a boolean result indicating success or failure.
 
 Requirements
-This library requires phpunit/phpunit: ^10.4 and PHP 8.0 or greater to function correctly. Make sure you meet this requirement before using the code.
+This library requires PHP 8.0 or greater to function correctly. Make sure you meet this requirement before using the code.
 
 <p/>
 
