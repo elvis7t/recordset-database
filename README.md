@@ -78,7 +78,7 @@ $rs = new RecordSetDatabase();
 $rs->Select('table_name');
 
 while ($rs->DataGenerator()) {
-    echo '<tr><td>' . $rs->formFld('table_field') . '</td></tr>';
+    echo '<tr><td>' . $rs->formatFld('table_field') . '</td></tr>';
 }
 
 // This would return: <tr><td>25/10/2022 às 13:01:21</td></tr>
