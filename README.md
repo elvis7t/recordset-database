@@ -8,12 +8,19 @@ This is a simple library for managing database connections and building queries 
 This library is designed to facilitate the interaction between PHP and databases using Mysqli. It provides methods for database connection, query execution, record selection, insert. 
 
 Improved PHP Code for Database Operations This code sample demonstrates how to use the RecordSetDatabase library to perform various database operations. Here's an overview of what each part of the code does:
-Include the Library: You need to include the library's autoload file to access its functionality.
-Import the RecordSetDatabase Class: Use the use statement to import the RecordSetDatabase class for easier access.
-Database Credentials: Set up your database credentials (host, username, password, database name, and charset) in the provided variables.
-Select Method: Use the select method to fetch data from a table based on conditions like a where clause, order by clause, and limit clause. Iterate over the data using the DataGenerator method and display the results.
-Query Method: Execute custom SQL queries with the Execute method and retrieve results in a similar way.
-Data Generator with DATE Formatting: Format date values with the formFld method and display the results.
+* Include the Library:  
+    You need to include the library's autoload file to access its functionality.
+  
+* Import the RecordSetDatabase Class:
+    Use the use statement to import the RecordSetDatabase class for easier access.
+  
+* Database Credentials:
+    Set up your database credentials (host, username, password, database name, and charset) in the provided variables.
+* Select Method:
+  Use the select method to fetch data from a table based on conditions like a where clause, order by clause, and limit clause. Iterate over the data using the DataGenerator method and display the results.
+* Query Method: Execute custom SQL queries with the Execute method and retrieve results in a similar way.
+  
+* Data Generator with DATE Formatting: Format date values with the formFld method and display the results.
 
 * INSERT Data: Insert a new record into the database and receive the inserted record's ID.
 
