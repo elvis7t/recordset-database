@@ -6,10 +6,10 @@ use ElvisLeite\RecordSetDatabase\Connection;
 require '../vendor/autoload.php';
 $testConnection = false;
 $testInsert = false;
-$testAutocod = false;
+$testAutocod = true;
 $testUpdate = false;
 $testDelete = false;
-$testSelect = true;
+$testSelect = false;
 $testSelecGetField = false;
 
 if ($testInsert) {
@@ -29,17 +29,22 @@ if ($testInsert) {
     }
 }
 if ($testAutocod) {
-    $rs = new RecordSet();
+    $rs = new RecordSet();    
+    $numUser = $rs->setAutoCode('id', 'user');        
+    
     $data = [
-        'id' => (string) $rs->setAutoCode('isd', 'user'),
-        'name' => 'Tatys',
-        'mail' => 'tatiss@gmail.com',
+        'id' => $rs->setAutoCode('id', 'user'),
+        'name' => 'Maria',
+        'mail' => 'maria@gmail.com',
         'pass' => 's$2y$10$zKdjHmKbmJ6GVOIrApOiTO5sOpZSZkbHiscY9Kab/CnsKF.2dVt3S'
     ];
 
     try {
         $rs->Insert($data, "user");
-        echo 'Inserção bem-sucedida!';
+        $num = $rs->getField("id", 'user', "id = $numUser" );
+        if($num == $numUser){
+            echo 'Inserção bem-sucedida!';
+        }
     } catch (Exception $e) {
         echo 'Ocorreu um erro: ' . $e->getMessage();
     }
@@ -73,7 +78,7 @@ if ($testSelect) {
     try {
         // $rs->Select('user', 'ids > 0', 'name desc', '1');
         $rs->Select('user', 'id <> 0', 'name ASC','10');
-        while ($rs->DataGenerator()) {
+        while ($rs->getDataGenerator()) {
     ?>
             <tr>
                 <td><?= $rs->fld('id') ?></td>

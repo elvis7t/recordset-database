@@ -5,102 +5,102 @@ use ElvisLeite\RecordSetDatabase\RecordSet;
 
 class RecordSetTest extends TestCase
 {
-    public function testExecuteWithValidSQL()
+    public function testexecuteWithValidSQL()
     {
         $dbConect = new RecordSet();
         $sql = "SELECT * FROM user";
-        $dbConect->Execute($sql);
+        $dbConect->execute($sql);
 
-        $this->assertNotNull($dbConect->DataGenerator());
+        $this->assertNotNull($dbConect->getDataGenerator());
     }
 
-    public function testExecuteWithEmptySQL()
+    public function testexecuteWithEmptySQL()
     {
         $dbConect = new RecordSet();
         $sql = "";
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('SQL query cannot be empty');
-        $dbConect->Execute($sql);
+        $dbConect->execute($sql);
     }
 
-    public function testExecuteWithInvalidSQL()
+    public function testexecuteWithInvalidSQL()
     {
         $dbConect = new RecordSet();
         $sql = "SELECT * FROM non_existing_table";
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage(mysqli_error($dbConect->Execute($sql)));
-        $dbConect->Execute($sql);
+        $this->expectExceptionMessage(mysqli_error($dbConect->execute($sql)));
+        $dbConect->execute($sql);
     }
 
-    public function testExecuteWithInvalidSQLField()
+    public function testexecuteWithInvalidSQLField()
     {
         $dbConect = new RecordSet();
         $sql = "SELECT * FROM user data = 1";
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage(mysqli_error($dbConect->Execute($sql)));
-        $dbConect->Execute($sql);
+        $this->expectExceptionMessage(mysqli_error($dbConect->execute($sql)));
+        $dbConect->execute($sql);
     }
-    public function testExecuteWithInvalidValue()
+    public function testexecuteWithInvalidValue()
     {
         $dbConect = new RecordSet();
         $sql = "SELECT * FROM user id= ss";
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage(mysqli_error($dbConect->Execute($sql)));
-        $dbConect->Execute($sql);
+        $this->expectExceptionMessage(mysqli_error($dbConect->execute($sql)));
+        $dbConect->execute($sql);
     }
 
-    public function testDataGeneratorWithValidSQL()
+    public function testgetDataGeneratorWithValidSQL()
     {
         $dbConect = new RecordSet();
         $sql = "SELECT * FROM user";
-        $dbConect->Execute($sql);
+        $dbConect->execute($sql);
 
-        $this->assertIsArray($dbConect->DataGenerator());
-        $this->assertNotNull($dbConect->DataGenerator());
+        $this->assertIsArray($dbConect->getDataGenerator());
+        $this->assertNotNull($dbConect->getDataGenerator());
     }
-    public function testDataGeneratorWithInvalidSQL()
+    public function testgetDataGeneratorWithInvalidSQL()
     {
         $dbConect = new RecordSet();
         $this->expectException(Exception::class);
         $this->expectExceptionMessage("Table 'mvc.users' doesn't exist");
 
         $sql = "SELECT * FROM users";
-        $dbConect->Execute($sql);
+        $dbConect->execute($sql);
 
-        $this->assertIsArray($dbConect->DataGenerator());
-        $this->assertNotNull($dbConect->DataGenerator());
+        $this->assertIsArray($dbConect->getDataGenerator());
+        $this->assertNotNull($dbConect->getDataGenerator());
     }
 
-    public function testDataGeneratorWithSelectValidSQL()
+    public function testgetDataGeneratorWithSelectValidSQL()
     {
         $dbConect = new RecordSet();
-        $dbConect->Select('user', 'id <> 0', 'name ASC');
+        $dbConect->select('user', 'id <> 0', 'name ASC');
 
-        $this->assertIsArray($dbConect->DataGenerator());
-        $this->assertNotNull($dbConect->DataGenerator());
+        $this->assertIsArray($dbConect->getDataGenerator());
+        $this->assertNotNull($dbConect->getDataGenerator());
     }
-    public function testDataGeneratorWithSelectInvalidSQLTable()
+    public function testgetDataGeneratorWithSelectInvalidSQLTable()
     {
         $dbConect = new RecordSet();
         $this->expectException(Exception::class);
         $this->expectExceptionMessage("Table 'mvc.users' doesn't exist");
 
-        $dbConect->Select('users', 'id <> 0', 'names ASC', '10');
-        $dbConect->DataGenerator();
+        $dbConect->select('users', 'id <> 0', 'names ASC', '10');
+        $dbConect->getDataGenerator();
     }
 
-    public function testDataGeneratorWithSelectInvalidSQLField()
+    public function testgetDataGeneratorWithSelectInvalidSQLField()
     {
         $rs = new RecordSet();
         $this->expectException(Exception::class);
         $this->expectExceptionMessage("Unknown column 'snames' in 'order clause'");
 
-        $rs->Select('user', 'id <> 0', 'snames ASC', '10');
-        $rs->DataGenerator();
+        $rs->select('user', 'id <> 0', 'snames ASC', '10');
+        $rs->getDataGenerator();
     }
 
     public function testGetCountRowsReturnsCorrectNumberOfRows()
@@ -129,7 +129,7 @@ class RecordSetTest extends TestCase
     {
         $rs = new RecordSet();
         $rs->select("user");
-        $this->assertIsArray($rs->DataGenerator());
+        $this->assertIsArray($rs->getDataGenerator());
     }
 
     public function testSelectWhithAllParams()
@@ -137,7 +137,7 @@ class RecordSetTest extends TestCase
         $rs = new RecordSet();
         $rs->select("user", "id > 0 ", "name ASC", "100");
 
-        $this->assertIsArray($rs->DataGenerator());
+        $this->assertIsArray($rs->getDataGenerator());
     }
     public function testSelectWhithInvalidSQLTableName()
     {
@@ -156,20 +156,20 @@ class RecordSetTest extends TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    public function testSelectWhithInvalidValue()
-    {
-        $rs = new RecordSet();
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Record does not exist.");
-        $rs->select("user", "id < 0 ", "name ASC", "100");
-        $this->expectNotToPerformAssertions();
-    }
+    // public function testSelectWhithInvalidValue()
+    // {
+    //     $rs = new RecordSet();
+    //     $this->expectException(Exception::class);
+    //     // $this->expectExceptionMessage("Record does not exist.");
+    //     $rs->select("user", "id < 0 ", "name ASC", "100");
+    //     // $this->expectNotToPerformAssertions();
+    // }
 
     public function testFld()
     {
         $rs = new RecordSet();
         $rs->select("user");
-        $rs->DataGenerator();
+        $rs->getDataGenerator();
         $this->assertIsString($rs->fld('id'));
     }
 
@@ -177,7 +177,7 @@ class RecordSetTest extends TestCase
     {
         $rs = new RecordSet();
         $rs->select("depoimentos");
-        $rs->DataGenerator();
+        $rs->getDataGenerator();
         $this->assertIsString($rs->formatFld('data'));
     }
 
@@ -187,7 +187,7 @@ class RecordSetTest extends TestCase
 
         $rs = new RecordSet();
         $rs->select("depoimentos", "id = 37", "data ASC", "1");
-        $rs->DataGenerator();
+        $rs->getDataGenerator();
         $actual = $rs->formatFld("data");
 
         $this->assertEquals($actual, $expected);
@@ -199,7 +199,7 @@ class RecordSetTest extends TestCase
 
         $rs = new RecordSet();
         $rs->select("depoimentos", "id = 37", "data ASC", "1");
-        $rs->DataGenerator();
+        $rs->getDataGenerator();
         $actual = $rs->formatMonthField("data");
 
         $this->assertEquals($actual, $expected);
@@ -211,7 +211,7 @@ class RecordSetTest extends TestCase
 
         $rs = new RecordSet();
         $rs->select("depoimentos", "id = 37", "data ASC", "1");
-        $rs->DataGenerator();
+        $rs->getDataGenerator();
         $actual = $rs->formatMonthWhithHourField("data");
 
         $this->assertEquals($actual, $expected);
@@ -222,13 +222,14 @@ class RecordSetTest extends TestCase
         $recordSet = new RecordSet();
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage("Duplicate entry 'cabrita@gmail.com' for key 'mail");
-        $recordSet->Insert([
+        $recordSet->insert([
+            'id' => $recordSet->setAutoCode('id', 'user'),
             'name' => 'Camily',
             'mail' => "cabrita@gmail.com",
             'pass' => '112312321'
         ], 'user');
         $email = $recordSet->getField('mail', 'user', "mail = 'cabrita@gmail.com'");
-        $recordSet->DataGenerator();
+        $recordSet->getDataGenerator();
         $mail = 'cabrita@gmail.com';
         $this->assertEquals($mail, $email);
     }
@@ -239,7 +240,7 @@ class RecordSetTest extends TestCase
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Invalid table or values');
-        $recordSet->Insert(['name' => 'Camily'], '');
+        $recordSet->insert(['name' => 'Camily'], '');
     }
 
     public function testInsertWithInvalidValues()
@@ -248,7 +249,7 @@ class RecordSetTest extends TestCase
         $this->expectExceptionMessage("Insert operation failed: Unknown column 'code' in 'field list'");
 
         $recordSet = new RecordSet();
-        $recordSet->Insert(['code' => '12s'], 'user');
+        $recordSet->insert(['code' => '12s'], 'user');
     }
 
     public function testInsertWithValidDataDuplicate()
@@ -263,7 +264,7 @@ class RecordSetTest extends TestCase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage("Insert operation failed: Duplicate entry 'camily@gmail.com' for key 'mail'");
 
-        $this->assertTrue($recordSet->Insert($data, 'user'));
+        $this->assertTrue($recordSet->insert($data, 'user'));
     }
     public function testInsertWithInValidTableName()
     {
@@ -278,7 +279,7 @@ class RecordSetTest extends TestCase
         $this->expectExceptionMessage("Insert operation failed: Duplicate entry 'camily@gmail.com' for key 'mail'");
         $this->expectExceptionMessage("Insert operation failed: Table 'mvc.table_name' doesn't exist");
 
-        $this->assertTrue($recordSet->Insert($data, 'table_name'));
+        $this->assertTrue($recordSet->insert($data, 'table_name'));
     }
     
     public function testUpdate()
@@ -287,11 +288,11 @@ class RecordSetTest extends TestCase
         $fields = ['name' => 'Camily'];
         $table = 'user';
         $where = 'id = 2';
-        $recordSet->Update($fields, $table, $where);
+        $recordSet->update($fields, $table, $where);
 
         $sql = "SELECT * FROM $table WHERE $where";
-        $recordSet->Execute($sql);
-        $recordSet->DataGenerator();
+        $recordSet->execute($sql);
+        $recordSet->getDataGenerator();
         $updatedRecord = $recordSet->fld('name');
         $this->assertEquals('Camily', $updatedRecord);
     }
@@ -299,19 +300,19 @@ class RecordSetTest extends TestCase
     public function testUpdateWithInvalidSQLTableName()
     {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Database error: Table 'mvc.users' doesn't exist");
+        $this->expectExceptionMessage("Update operation failed: Table 'mvc.users' doesn't exist");
 
         $recordSet = new RecordSet();
-        $recordSet->Update(['name' => 'Camily'], 'users', 'id = 70');
+        $recordSet->update(['name' => 'Camily'], 'users', 'id = 70');
     }
 
     public function testUpdateWithEmptyTableName()
     {
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Database error: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WHERE id = 1' at line 1");
+        $this->expectExceptionMessage("Update operation failed: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'SET name = ? WHERE id = 1' at line 1");
 
         $recordSet = new RecordSet();
-        $recordSet->Update(['name' => 'Camily'], '', 'id = 1');
+        $recordSet->update(['name' => 'Camily'], '', 'id = 1');
     }
 
     public function testDeleteWithEmptyTableName()
@@ -320,7 +321,7 @@ class RecordSetTest extends TestCase
         $this->expectExceptionMessage('Table name cannot be empty.');
 
         $recordSet = new RecordSet();
-        $recordSet->Delete('', '');
+        $recordSet->delete('', '');
     }
 
     public function testDeleteWithEmptyConditions()
@@ -329,7 +330,7 @@ class RecordSetTest extends TestCase
         $this->expectExceptionMessage('Conditions array cannot be empty.');
 
         $recordSet = new RecordSet();
-        $recordSet->Delete('user', '');
+        $recordSet->delete('user', '');
     }
 
     public function testDelete()
@@ -337,22 +338,20 @@ class RecordSetTest extends TestCase
         $recordSet = new RecordSet();
         $data = [
             'id' => (string) $recordSet->setAutoCode('id', 'user'),
-            'name' => 'Peter',
-            'mail' => 'peter@gmail.com',
+            'name' => 'Jordan',
+            'mail' => 'jordan@gmail.com',
             'pass' => 's$2y$10$zKdjHmKbmJ6GVOIrApOiTO5sOpZSZkbHiscY9Kab/CnsKF.2dVt3S'
         ];
         
-        $recordSet->Insert($data, "user");
+        $recordSet->insert($data, "user");
         
         $table = 'user';
-        $conditions = "mail = 'peter@gmail.com'";
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Record does not exist");
-        $recordSet->Delete($table, $conditions);
+        $conditions = "mail = 'jordan@gmail.com'";        
+        $recordSet->delete($table, $conditions);
 
         $sql = "SELECT * FROM $table WHERE mail = 'peter@gmail.com'";
-        $recordSet->Execute($sql);
-        $recordSet->DataGenerator();
+        $recordSet->execute($sql);
+        $recordSet->getDataGenerator();
         $this->assertNull($recordSet->fld('name'));
     }
         
@@ -361,13 +360,11 @@ class RecordSetTest extends TestCase
         $recordSet = new RecordSet();
         $table = 'user';
         $conditions = "id = 100";
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Record does not exist");
-
-        $recordSet->Delete($table, $conditions);
+        
+        $recordSet->delete($table, $conditions);
         $sql = "SELECT * FROM $table WHERE id = 100";
-        $recordSet->Execute($sql);
-        $recordSet->DataGenerator();
+        $recordSet->execute($sql);
+        $recordSet->getDataGenerator();
 
         $this->assertNull($recordSet->fld('name'));
     }
@@ -410,14 +407,41 @@ class RecordSetTest extends TestCase
         $this->assertNull($actualValue);
     }
 
+    public function testSetAutoCode()
+    {
+        $database = new RecordSet();
+        $numUser = $database->setAutoCode('id', 'user');
+        $database->insert([
+            'id' => $database->setAutoCode('id', 'user'),
+            'name' => 'Juarez',
+            'mail' => 'juarez@gmail.com',
+            'pass' => 's$2y$10$zKdjHmKbmJ6GVOIrApOiTO5sOpZSZkbHiscY9Kab/C'
+        ], 'user');
+        
+        $num = $database->getField("id", 'user', "id = $numUser" );        
+        $this->assertEquals($num,$numUser);
+        $database->delete("user", "id = $num");
+    }
+    public function testSetAutoCodeWithInvalidColumm()
+    {
+        $database = new RecordSet();
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Database error: Database error: Unknown column 'ids' in 'field list'");
+
+        $database->insert([
+            'id' => (string) $database->setAutoCode('ids', 'user'),
+            'name' => 'Elvis'
+        ], 'user');
+    }
+    
     public function testSetAutoCodeWithEmptyTable()
     {
         $database = new RecordSet();
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Database error: Unknown column 'isd' in 'field list'");
+        $this->expectExceptionMessage("Invalid fieldname, tablename, or whereClause");
 
         $database->insert([
-            'id' => (string) $database->setAutoCode('isd', 'user'),
+            'id' => (string) $database->setAutoCode('id', ''),
             'name' => 'Elvis'
         ], 'user');
     }
