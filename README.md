@@ -36,8 +36,9 @@ Make sure you meet this requirement before using the code.
 <p/>
 
 ## Usage
+```
 composer require elvis-leite/recordset-database
-
+```
 To use this library just follow the examples below:
 
 #### Database
