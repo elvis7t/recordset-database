@@ -36,6 +36,8 @@ Make sure you meet this requirement before using the code.
 <p/>
 
 ## Usage
+
+Instalation
 ```
 composer require elvis-leite/recordset-database
 ```
